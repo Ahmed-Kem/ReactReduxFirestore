@@ -1,0 +1,17 @@
+.tagContainer {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  background: grey;
+  padding: 10px 20px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+}
+
+.contactList {
+  display: flex;
+  flex-direction: row;
+  list-style-type: none;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
