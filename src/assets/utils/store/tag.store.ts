@@ -31,20 +31,9 @@ export const useTagStore = create<tagStore>((set) => ({
     })),
 
   deleteTag: (tag) =>
-    set((state) => {
-      if (!state.tags.includes(tag)) {
-        return state;
-      }
-
-      const indexTag = state.tags.indexOf(tag);
-
-      const tempTagList = [
-        ...state.tags.slice(0, indexTag),
-        ...state.tags.slice(indexTag + 1),
-      ];
-
-      return { ...state, tags: tempTagList };
-    }),
+    set((state) => ({
+      tags: state.tags.filter((t) => t !== tag),
+    })),
 
   addContactToTag: (tag, contact) =>
     set((state) => {

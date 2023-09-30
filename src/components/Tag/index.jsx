@@ -5,13 +5,10 @@ import { useTagStore } from "../../assets/utils/store/tag.store";
 import { useRef, useEffect } from "react";
 
 export function Tag({ tag }) {
-  const { contacts, addTagToContact, deleteTagFromContact } = useContactStore();
-  const {
-    addContactToTag,
-    deleteContactFromTag,
-    deleteAllContactsFromTag,
-    deleteTag,
-  } = useTagStore();
+  const { addTagToContact, deleteTagFromContact } = useContactStore();
+  const { addContactToTag, deleteContactFromTag, deleteTag } = useTagStore();
+
+  const contacts = useContactStore((state) => state.contacts);
 
   const inputIdContactRef = useRef(null);
 
@@ -37,11 +34,13 @@ export function Tag({ tag }) {
 
   function handleDeleteTag() {
     console.log("delete Tag");
-    for (let contact of tag.contacts) {
-      deleteTagFromContact(contacts[contact], tag);
+    for (let idContact of tag.contacts) {
+      deleteTagFromContact(
+        contacts.find((contact) => contact.id === idContact),
+        tag
+      );
     }
 
-    //deleteAllContactsFromTag(tag);
     deleteTag(tag);
   }
 

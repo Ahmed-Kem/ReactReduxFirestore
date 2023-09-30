@@ -31,20 +31,9 @@ export const useContactStore = create<contactStore>((set) => ({
     })),
 
   deleteContact: (contact) =>
-    set((state) => {
-      if (!state.contacts.includes(contact)) {
-        return state;
-      }
-
-      const indexContact = state.contacts.indexOf(contact);
-
-      const tempContactList = [
-        ...state.contacts.slice(0, indexContact),
-        ...state.contacts.slice(indexContact + 1),
-      ];
-
-      return { ...state, contacts: tempContactList };
-    }),
+    set((state) => ({
+      contacts: state.contacts.filter((c) => c !== contact),
+    })),
 
   addTagToContact: (contact, tag) =>
     set((state) => {

@@ -5,13 +5,10 @@ import { useTagStore } from "../../assets/utils/store/tag.store";
 import { useRef, useEffect } from "react";
 
 export function Contact({ contact }) {
-  const {
-    addTagToContact,
-    deleteTagFromContact,
-    deleteAllTagsFromContact,
-    deleteContact,
-  } = useContactStore();
-  const { tags, addContactToTag, deleteContactFromTag } = useTagStore();
+  const { addTagToContact, deleteTagFromContact, deleteContact } =
+    useContactStore();
+  const { addContactToTag, deleteContactFromTag } = useTagStore();
+  const tags = useTagStore((state) => state.tags);
 
   const inputIdTagRef = useRef(null);
 
@@ -43,42 +40,18 @@ export function Contact({ contact }) {
         contact
       );
     }
-
-    deleteAllTagsFromContact(contact);
     deleteContact(contact);
   }
 
-  const handleClearContact = () => {
-    console.log("clear Contact");
-    for (let idTag of contact.tags) {
-      deleteContactFromTag(
-        tags.find((tag) => tag.id === idTag),
-        contact
-      );
-    }
-
-    deleteAllTagsFromContact(contact);
-  };
-
-  const handleRemoveContact = () => {
-    console.log("remove Contact");
-    deleteContact(contact);
-  };
-
   return (
-    <li className="contactContainer" onDelete={handleClearContact}>
+    <li className="contactContainer">
       <button
         style={{ width: 18, background: "red", color: "white" }}
-        onClick={handleClearContact}
+        onClick={handleDeleteContact}
       >
         X
       </button>
-      <button
-        style={{ width: 18, background: "red", color: "white" }}
-        onClick={handleRemoveContact}
-      >
-        XX
-      </button>
+
       <span style={{ fontSize: 20, marginBottom: 20 }}>{contact.name}</span>
       <input
         ref={inputIdTagRef}
@@ -91,7 +64,7 @@ export function Contact({ contact }) {
       </button>
       {
         <ul className="tagList">
-          {contact.tags.map((idTag) => (
+          {/*contact.tags.map((idTag) => (
             <MiniTag
               key={idTag}
               tag={tags.find((tag) => tag.id === idTag)}
@@ -102,7 +75,7 @@ export function Contact({ contact }) {
                 )
               }
             />
-          ))}
+            ))*/}
         </ul>
       }
     </li>
