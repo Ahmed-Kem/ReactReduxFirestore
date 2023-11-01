@@ -1,5 +1,6 @@
 import firebase from "firebase/compat/app";
 import "firebase/compat/firestore";
+import "firebase/compat/auth";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -13,8 +14,11 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const firebaseApp = firebase.initializeApp(firebaseConfig);
+//firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 // Initialize Cloud Firestore and get a reference to the service
 const firestore = firebaseApp.firestore();
+const auth = firebaseApp.auth();
+const Auth = firebase.auth;
 
-export { firestore };
+export { firestore, auth, Auth };

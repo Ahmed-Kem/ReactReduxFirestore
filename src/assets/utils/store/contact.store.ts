@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { v4 as uuidv4 } from "uuid";
+import { firestore } from "./../../../firebase";
+import { User } from "firebase/auth";
 
 interface Contact {
   id: string;
@@ -14,94 +15,154 @@ interface Tag {
 }
 
 type contactStore = {
+  user: User | null;
   contacts: Array<Contact>;
+  isLoadingContact: boolean;
+  initContactStore: (user: User) => void;
   addContact: (name: Contact["name"]) => void;
   deleteContact: (contact: Contact) => void;
   addTagToContact: (contact: Contact, tag: Tag) => void;
   deleteTagFromContact: (contact: Contact, tag: Tag) => void;
   deleteAllTagsFromContact: (contact: Contact) => void;
+  resetContactStore: () => void;
 };
 
 export const useContactStore = create<contactStore>((set) => ({
+  user: null,
   contacts: [],
+  isLoadingContact: true,
+
+  /*initContactStore: (_user) => {
+    set((state) => {
+      const unsubscribe = firestore
+        .collection("Users")
+        .doc(_user.uid)
+        .collection("Contacts")
+        .onSnapshot((snapshot) => {
+          const updatedContacts: Contact[] = snapshot.docs.map(
+            (doc) =>
+              ({
+                id: doc.id,
+                ...doc.data(),
+              }) as Contact
+          );
+          set({
+            contacts: updatedContacts,
+            isLoadingContact: false,
+          });
+        });
+      return { user: _user };
+    });
+  },*/
+
+  initContactStore: (_user) => {
+    set({ user: _user });
+
+    return firestore
+      .collection("Users")
+      .doc(_user.uid)
+      .collection("Contacts")
+      .onSnapshot((snapshot) => {
+        const updatedContacts: Contact[] = snapshot.docs.map(
+          (doc) =>
+            ({
+              id: doc.id,
+              ...doc.data(),
+            }) as Contact
+        );
+        set({
+          contacts: updatedContacts,
+          isLoadingContact: false,
+        });
+      });
+  },
 
   addContact: (name) =>
-    set((state) => ({
-      contacts: [...state.contacts, { id: uuidv4(), name: name, tags: [] }],
-    })),
+    set((state) => {
+      var ref = firestore
+        .collection("Users")
+        .doc(state.user?.uid)
+        .collection("Contacts")
+        .doc().id;
+
+      firestore
+        .collection("Users")
+        .doc(state.user?.uid)
+        .collection("Contacts")
+        .doc(ref)
+        .set({
+          id: ref,
+          name: name,
+          tags: [],
+        })
+        .then(() => {})
+        .catch((error) => {
+          console.error("Error writing contact: ", error);
+        });
+
+      return state;
+    }),
 
   deleteContact: (contact) =>
-    set((state) => ({
-      contacts: state.contacts.filter((c) => c !== contact),
-    })),
+    set((state) => {
+      if (state.contacts.includes(contact)) {
+        firestore
+          .collection("Users")
+          .doc(state.user?.uid)
+          .collection("Contacts")
+          .doc(contact.id)
+          .delete()
+          .then(() => {})
+          .catch((error) => {
+            console.error("Error removing contact: ", error);
+          });
+      }
+
+      return state;
+    }),
 
   addTagToContact: (contact, tag) =>
     set((state) => {
-      if (!state.contacts.includes(contact)) {
-        return state;
+      if (state.contacts.includes(contact) && !contact.tags.includes(tag.id)) {
+        firestore
+          .collection("Users")
+          .doc(state.user?.uid)
+          .collection("Contacts")
+          .doc(contact.id)
+          .update({ tags: [...contact.tags, tag.id] });
       }
 
-      const indexContact = state.contacts.indexOf(contact);
-
-      if (state.contacts[indexContact].tags.includes(tag.id)) {
-        return state;
-      }
-
-      const tempTags = [...state.contacts[indexContact].tags, tag.id].sort();
-      const tempContact = { ...state.contacts[indexContact], tags: tempTags };
-      const tempContactList = [
-        ...state.contacts.slice(0, indexContact),
-        tempContact,
-        ...state.contacts.slice(indexContact + 1),
-      ];
-
-      return { ...state, contacts: tempContactList };
+      return state;
     }),
 
   deleteTagFromContact: (contact, tag) =>
     set((state) => {
-      if (!state.contacts.includes(contact)) {
-        return state;
+      if (state.contacts.includes(contact) && contact.tags.includes(tag.id)) {
+        firestore
+          .collection("Users")
+          .doc(state.user?.uid)
+          .collection("Contacts")
+          .doc(contact.id)
+          .update({ tags: contact.tags.filter((idTag) => idTag !== tag.id) });
       }
 
-      const indexContact = state.contacts.indexOf(contact);
-
-      if (!state.contacts[indexContact].tags.includes(tag.id)) {
-        return state;
-      }
-
-      const indexTag = state.contacts[indexContact].tags.indexOf(tag.id);
-
-      const tempTags = [
-        ...state.contacts[indexContact].tags.slice(0, indexTag),
-        ...state.contacts[indexContact].tags.slice(indexTag + 1),
-      ];
-
-      const tempContact = { ...state.contacts[indexContact], tags: tempTags };
-
-      const tempContactList = [
-        ...state.contacts.slice(0, indexContact),
-        tempContact,
-        ...state.contacts.slice(indexContact + 1),
-      ];
-
-      return { ...state, contacts: tempContactList };
+      return state;
     }),
 
   deleteAllTagsFromContact: (contact) =>
     set((state) => {
-      if (!state.contacts.includes(contact)) {
-        return state;
+      if (state.contacts.includes(contact)) {
+        firestore
+          .collection("Users")
+          .doc(state.user?.uid)
+          .collection("Contacts")
+          .doc(contact.id)
+          .update({ tags: [] });
       }
 
-      const indexContact = state.contacts.indexOf(contact);
-
-      const tempContactList = [
-        ...state.contacts.slice(0, indexContact),
-        { id: contact.id, name: contact.name, tags: [] },
-        ...state.contacts.slice(indexContact + 1),
-      ];
-
-      return { ...state, contacts: tempContactList };
+      return state;
     }),
+
+  resetContactStore: () =>
+    set({ contacts: [], user: null, isLoadingContact: true }),
 }));

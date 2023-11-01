@@ -32,10 +32,10 @@ export function Tag({ tag }) {
     deleteContactFromTag(_tag, _contact);
   }
 
-  function handleDeleteTag() {
+  async function handleDeleteTag() {
     console.log("delete Tag");
     for (let idContact of tag.contacts) {
-      deleteTagFromContact(
+      await deleteTagFromContact(
         contacts.find((contact) => contact.id === idContact),
         tag
       );
@@ -52,13 +52,10 @@ export function Tag({ tag }) {
       >
         X
       </button>
-      <button
-        style={{ width: 18, background: "red", color: "white" }}
-        onClick={() => deleteTag(tag)}
-      >
-        XX
-      </button>
-      <span style={{ fontSize: 20, marginBottom: 20 }}>{tag.name}</span>
+
+      <span style={{ fontSize: 20, marginBottom: 20, color: "white" }}>
+        {tag.name}
+      </span>
       <input
         ref={inputIdContactRef}
         type="text"

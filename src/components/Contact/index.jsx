@@ -2,7 +2,7 @@ import "./style.css";
 import { MiniTag } from "../MiniTag";
 import { useContactStore } from "../../assets/utils/store/contact.store";
 import { useTagStore } from "../../assets/utils/store/tag.store";
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 
 export function Contact({ contact }) {
   const { addTagToContact, deleteTagFromContact, deleteContact } =
@@ -32,10 +32,10 @@ export function Contact({ contact }) {
     deleteContactFromTag(_tag, _contact);
   }
 
-  function handleDeleteContact() {
+  async function handleDeleteContact() {
     console.log("delete Contact");
     for (let idTag of contact.tags) {
-      deleteContactFromTag(
+      await deleteContactFromTag(
         tags.find((tag) => tag.id === idTag),
         contact
       );
@@ -52,7 +52,9 @@ export function Contact({ contact }) {
         X
       </button>
 
-      <span style={{ fontSize: 20, marginBottom: 20 }}>{contact.name}</span>
+      <span style={{ fontSize: 20, marginBottom: 20, color: "white" }}>
+        {contact.name}
+      </span>
       <input
         ref={inputIdTagRef}
         type="text"
@@ -64,7 +66,7 @@ export function Contact({ contact }) {
       </button>
       {
         <ul className="tagList">
-          {/*contact.tags.map((idTag) => (
+          {contact.tags.map((idTag) => (
             <MiniTag
               key={idTag}
               tag={tags.find((tag) => tag.id === idTag)}
@@ -75,7 +77,7 @@ export function Contact({ contact }) {
                 )
               }
             />
-            ))*/}
+          ))}
         </ul>
       }
     </li>
